@@ -16,10 +16,9 @@ parser.add_argument("-type", help="searching for a specific type of file")
 args = parser.parse_args()
 
 if args.name:
-	for (root, dirs, filenames) in os.walk(args.path):
-		for dirt in dirs:
-			for blah in glob.glob(args.name):
-				print blah
+	wheretolook = args.path + os.path.relpath(args.name)
+	for blah in glob.glob(wheretolook):
+		print blah
 """
 working code that finds exact file names. Excluded for testing globbing
 	for (root, dirs, filenames) in os.walk(args.path):
