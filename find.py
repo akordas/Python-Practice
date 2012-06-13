@@ -7,20 +7,20 @@ parser = argparse.ArgumentParser(description='Process commandline options')
 
 parser.add_argument("path", help="the path that you wish to search")
 
-parser.add_argument("name", help="the term that you're searching for")
+parser.add_argument("-regex", help="using regular expressions",
+			action="store_true")
 
-parser.add_argument("-regex")
+parser.add_argument("-name", help="search for an exact name")
 
-parser.add_argument("-name")
-
-parser.add_argument("-type")
+parser.add_argument("-type", help="searching for a specific type of file")
 
 args = parser.parse_args()
 
-##print args.path, '\n' ##dummy line- show what directory we're starting the search from
-
-##print os.listdir(args.path)  ##dummy line- show what files are in the directory
-
-for filename in os.listdir(args.path):
-	if args.name in filename:
-		print os.path.abspath(filename)
+for (root, dirs, filenames) in os.walk(args.path):
+	for filename in filenames:
+		if args.name == filename:
+			#if we find the key in the filename
+			print os.path.join(root, filename)
+	for dirname in dirs:
+		if args.name == dirname:
+			print os.path.join(root, dirname)
