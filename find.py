@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from glob import glob
 from re import compile, match
 from sys import exit
+from fnmatch import filter, fnmatch
 
 parser = ArgumentParser(description='Process commandline options')
 
@@ -26,18 +27,23 @@ if not args.name and not args.regex:
 	exit()
 
 if args.name:
+	"""	
+	###this chunk of code works for the directory that args.path points to
 	wheretolook = args.path + relpath(args.name)
 	for blah in glob(wheretolook):
 		print blah
-
-	print "entering the experimental zone now. brace yourself."
-	for (root, dirs, filenames) in walk(args.path):
+	"""
+	###this is the code (in development) for recursive globbing
+	for root, dirs, files in walk(args.path):
+		for filename in files:
+			if fnmatch(filename, args.name):
+				print join(root,filename)
 		for dirname in dirs:
-			wheretolook = relpath(dirname)+relpath(args.name, dirname)
-			for blah in glob(wheretolook):
-				print blah
+			if fnmatch(dirname, args.name):
+				print join(root, dirname)
 
-	print "this is what the exact-name search would yield"
+	"""	
+	###this is the code for searching for the exact filename
 	for (root, dirs, filenames) in walk(args.path):
 		for filename in filenames:
 			if args.name == filename:
@@ -46,6 +52,7 @@ if args.name:
 		for dirname in dirs:
 			if args.name == dirname:
 				print join(root, dirname)
+	"""
 
 if args.regex:
 	pattern = compile(args.regex)
