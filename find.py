@@ -1,7 +1,6 @@
 from os import walk
 from os.path import relpath, join
 from argparse import ArgumentParser
-from glob import glob
 from re import compile, match
 from sys import exit
 from fnmatch import filter, fnmatch
@@ -10,56 +9,70 @@ parser = ArgumentParser(description='Process commandline options')
 
 parser.add_argument("path", help="the path that you wish to search")
 
-parser.add_argument("-regex", help="using regular expressions")
+group = parser.add_mutually_exclusive_group(required=True)
 
-parser.add_argument("-name", help="search for an exact name")
+group.add_argument("-r", "-regex", help="using regular expressions")
 
-parser.add_argument("-type", help="searching for a specific type of file")
+group.add_argument("-n", "-name", help="search for an fnmatching  name")
+
+parser.add_argument("-t", "-type", help="limit search to dirs or files",
+			type=str)
+
+group.add_argument("-e", "-exact", help="search for the exact file/dirname")
 
 args = parser.parse_args()
 
-if args.name and args.regex:
-	print "Please pass in only a globbed name or a regex expression"
-	exit()
-
-if not args.name and not args.regex:
-	print "Please provide either a globbed name or a regex expression"
-	exit()
-
-if args.name:
-	"""	
-	###this chunk of code works for the directory that args.path points to
-	wheretolook = args.path + relpath(args.name)
-	for blah in glob(wheretolook):
-		print blah
-	"""
-	###this is the code (in development) for recursive globbing
+if args.n:
+	###this is the code for recursive globbing
 	for root, dirs, files in walk(args.path):
 		for filename in files:
-			if fnmatch(filename, args.name):
-				print join(root,filename)
+			if fnmatch(filename, args.n):
+				if not args.t:
+					print join(root,filename)
+				else:
+					if args.t == 'f':
+						print join(root, filename)
 		for dirname in dirs:
-			if fnmatch(dirname, args.name):
-				print join(root, dirname)
+			if fnmatch(dirname, args.n):
+				if not args.t:
+					print join(root, dirname)
+				else:
+					if args.t == 'd':
+						print join(root, dirname)
 
-	"""	
+if args.e:
 	###this is the code for searching for the exact filename
 	for (root, dirs, filenames) in walk(args.path):
 		for filename in filenames:
-			if args.name == filename:
+			if args.n == filename:
 				#if we find the key in the filename
-				print join(root, filename)
+				if not args.t:
+					print join(root, filename)
+				else:
+					if args.t == 'f':
+						print join(root, filename)
 		for dirname in dirs:
-			if args.name == dirname:
-				print join(root, dirname)
-	"""
+			if args.n == dirname:
+				if not args.t:
+					print join(root, dirname)
+				else:
+					if args.t == 'd':
+						print join(root, dirname)
 
-if args.regex:
-	pattern = compile(args.regex)
+if args.r:
+	pattern = compile(args.r)
 	for (root, dirs, filenames) in walk(args.path):
 		for filename in filenames:
 			if match(pattern, filename):
-				print join(root, filename)
+				if not args.t:
+					print join(root, filename)
+				else:
+					if args.t == 'f':
+						print join(root, filename)
 		for dirname in dirs:
 			if match(pattern, dirname):
-				print join(root, dirname)
+				if not args.t:
+					print join(root, dirname)
+				else:
+					if args.t == 'd':
+						print join(root, dirname)
