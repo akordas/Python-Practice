@@ -5,6 +5,7 @@ from fnmatch import filter, fnmatch
 import anydbm
 import sys
 import argparse
+import cStringIO
 
 def process_args(argslist):
 
@@ -25,59 +26,64 @@ def process_args(argslist):
 	group.add_argument("-e", "-exact", help="search for the exact file/dirname")
 
 	args = parser.parse_args(argslist)
-
-	print args
 	
+	result = ""
 
 	try:
 		if args.n:
 			#run the recursive globbing code
-			fnmatch_it(args.path, args.n, args.t)
+			result = fnmatch_it(args.path, args.n, args.t)
 	except:
 		pass
 	try:
 		if  args.e:
 			#run the exact match code
-			exact_it(args.path, args.e, args.t)
+			result = exact_it(args.path, args.e, args.t)
+			print "Result is: "+result
 	except:
 		pass
 	try:
 		if args.r:
-			regex_it(args.path, args.r, args.t)
+			result = regex_it(args.path, args.r, args.t)
 	except:
 		pass
 
+	return result
+
 def fnmatch_it(path, name, typ):
         ###this is the code for recursive globbing
+	output = cStringIO.StringIO()
         for root, dirs, files in walk(path):
                 for filename in files:
                         if fnmatch(filename, name):
                                 if not typ:
-                                        print join(root,filename)
+                                        output.write(join(root,filename)+'\n')
                                 else:
                                         if typ == 'f':
-                                                print join(root, filename)
+                                                output.write(join(root, filename)+'\n')
                 for dirname in dirs:
                         if fnmatch(dirname, name):
                                 if not typ:
-                                        print join(root, dirname)
+                                        output.write(join(root, dirname)+'\n')
                                 else:
                                         if typ == 'd':
-                                                print join(root, dirname)
+                                                output.write(join(root, dirname)+'\n')
+	return output
 
 def exact_it(path, exact, typ):
         ###this is the code for searching for the exact filename
+	output = cStringIO.StringIO()
         for (root, dirs, filenames) in walk(path):
                 if exists(join(root, "fsys.idx")):
                         index = anydbm.open(join(root, "fsys.idx"), 'r')
                         try:
                                 if  index[exact]:
                                         if not typ:
-                                                print join(root, exact)
+                                                output.write(join(root, exact)+'\n')
                                         elif typ == 'd' and index[exact]=='d':
-                                                print join(root, exact)
+                                                output.write(join(root, exact)+'\n')
                                         elif typ == 'f' and index[exact]=='f':
-                                                print join(root, exact)
+                                                output.write(join(root, exact)+'\n')
                         except:
                                 pass
                         index.close()
@@ -86,35 +92,37 @@ def exact_it(path, exact, typ):
                                 if exact == filename:
                                         #if we find the key in the filename
                                         if not typ:
-                                                print join(root, filename)
+                                                output.write(join(root, filename)+'\n')
                                         else:
                                                 if typ == 'f':
-                                                        print join(root, filename)
+                                                        output.write(join(root, filename)+'\n')
                         for dirname in dirs:
                                 if exact == dirname:
                                         if not typ:
-                                                print join(root, dirname)
+                                                output.write(join(root, dirname)+'\n')
                                         else:
                                                 if typ == 'd':
-                                                        print join(root, dirname)
+                                                        output.write(join(root, dirname)+'\n')
+	return output
 
 def regex_it(path, exp, typ):
+	output = cStringIO.StringIO()
         pattern = compile(exp)
         for (root, dirs, filenames) in walk(path):
                 for filename in filenames:
                         if match(pattern, filename):
                                 if not typ:
-                                        print join(root, filename)
+                                        output.write(join(root, filename)+'\n')
                                 else:
                                         if typ == 'f':
-                                                print join(root, filename)
+                                                output.write(join(root, filename)+'\n')
                 for dirname in dirs:
                         if match(pattern, dirname):
                                 if not typ:
-                                        print join(root, dirname)
+                                        output.write(join(root, dirname)+'\n')
                                 else:
                                         if typ == 'd':
-                                                print join(root, dirname)
+                                                output.write(join(root, dirname)+'\n')
 
 if __name__ == '__main__':
 	process_args()

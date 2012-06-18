@@ -20,7 +20,7 @@ class testFind(unittest.TestCase):
 			os.mkdir("/tmp/foodir/nested_dir")
 		if not os.path.exists("/tmp/notok/foobar_file"):
 			self.mk_file("/tmp/notok/foobar_file")
-		if not os.path.exists("tmp/foodir/nested_dir/foo"):
+		if not os.path.exists("/tmp/foodir/nested_dir/foo"):
 			self.mk_file("/tmp/foodir/nested_dir/foo")
 		if not os.path.exists("/tmp/foodir/nested_dir/foobar_file"):
 			self.mk_file("/tmp/foodir/nested_dir/foobar_file")
@@ -33,8 +33,8 @@ class testFind(unittest.TestCase):
 		myfile.close()
 
 	def test_process_args_exact(self):
-		find_packaged.process_args(['/tmp/', '-e', 'foo'])
-		assert True
+		actual_output = find_packaged.process_args(['/tmp/', '-e', 'foo'])
+		self.assertEqual(actual_output,"/tmp/foodir/nested_dir/foo\n")
 
 	def tearDown(self):
 		#breaks down the test directory structure in /tmp
