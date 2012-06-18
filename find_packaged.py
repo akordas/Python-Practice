@@ -26,14 +26,26 @@ def process_args(argslist):
 
 	args = parser.parse_args(argslist)
 
-	if args.n:
-		#run the recursive globbing code
-		fnmatch_it(args.path, args.n, args.t)
-	elif args.e:
-		#run the exact match code
-		exact_it(args.path, args.e, args.t)
-	else:
-		regex_it(args.path, args.r, args.t)
+	print args
+	
+
+	try:
+		if args.n:
+			#run the recursive globbing code
+			fnmatch_it(args.path, args.n, args.t)
+	except:
+		pass
+	try:
+		if  args.e:
+			#run the exact match code
+			exact_it(args.path, args.e, args.t)
+	except:
+		pass
+	try:
+		if args.r:
+			regex_it(args.path, args.r, args.t)
+	except:
+		pass
 
 def fnmatch_it(path, name, typ):
         ###this is the code for recursive globbing
