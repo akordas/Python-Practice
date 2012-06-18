@@ -1,14 +1,15 @@
 from os import walk
 from os.path import relpath, join, exists
-from argparse import ArgumentParser
 from re import compile, match
 from fnmatch import filter, fnmatch
 import anydbm
 import sys
+import argparse
 
-def process_args():
+def process_args(argslist):
 
-	parser = ArgumentParser(description='Process commandline options')
+	parser = argparse.ArgumentParser(description='Process commandline options',
+				argument_default = argparse.SUPPRESS)
 
 	parser.add_argument("path", help="the path that you wish to search")
 
@@ -23,7 +24,7 @@ def process_args():
 
 	group.add_argument("-e", "-exact", help="search for the exact file/dirname")
 
-	args = parser.parse_args()
+	args = parser.parse_args(argslist)
 
 	if args.n:
 		#run the recursive globbing code
