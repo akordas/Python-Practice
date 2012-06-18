@@ -17,7 +17,7 @@ group.add_argument("-r", "-regex", help="using regular expressions")
 group.add_argument("-n", "-name", help="search for an fnmatching  name")
 
 parser.add_argument("-t", "-type", help="limit search to dirs or files",
-			type=str)
+		type=str)
 
 group.add_argument("-e", "-exact", help="search for the exact file/dirname")
 
@@ -59,7 +59,7 @@ if args.e:
 			index.close()
 		else:
 			for filename in filenames:
-				if args.n == filename:
+				if args.e == filename:
 					#if we find the key in the filename
 					if not args.t:
 						print join(root, filename)
@@ -67,7 +67,7 @@ if args.e:
 						if args.t == 'f':
 							print join(root, filename)
 			for dirname in dirs:
-				if args.n == dirname:
+				if args.e == dirname:
 					if not args.t:
 						print join(root, dirname)
 					else:
