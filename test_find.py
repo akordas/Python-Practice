@@ -1,6 +1,8 @@
 import find_packaged
 import unittest
 import os
+import sys
+import re
 
 class testFind(unittest.TestCase):
 	"""
@@ -12,6 +14,10 @@ class testFind(unittest.TestCase):
 			os.mkdir("/tmp/foodir")
 		if not os.path.isdir("/tmp/notok"):
 			os.mkdir("/tmp/notok")
+		if not os.path.exists("/tmp/foodir/gray"):
+			self.mk_file("/tmp/foodir/gray")
+		if not os.path.exists("/tmp/foodir/grey"):
+			self.mk_file("/tmp/foodir/grey")
 		if not os.path.exists("/tmp/foodir/foobar_file"):
 			self.mk_file("/tmp/foodir/foobar_file")
 		if not os.path.exists("/tmp/foodir/not_valid"):		
@@ -33,11 +39,74 @@ class testFind(unittest.TestCase):
 		myfile.close()
 
 	def test_process_args_exact(self):
+		"""
+		tests that an exact name search works all the way through
+		"""
 		actual_output = find_packaged.process_args(['/tmp/', '-e', 'foo'])
-		self.assertEqual(actual_output,"/tmp/foodir/nested_dir/foo\n")
+		self.assertEqual(actual_output.getvalue(),"/tmp/foodir/nested_dir/foo\n")
+		actual_output.close()
+
+	def test_exact_type(self):
+		"""
+		test an exact name search with filetype included
+		"""
+		actual_output = find_packaged.process_args(['/tmp/', '-e', 'gray', '-t', 'f'])
+		expected_output = "/tmp/foodir/gray\n"
+		self.assertEqual(actual_output.getvalue(), expected_output)
+
+	def test_process_args_glob(self):
+		"""
+		tests that a fnmatched name search works all the way through
+		"""
+		actual_output = find_packaged.process_args(['/tmp','-n','n?t_valid'])
+		expected_value = "/tmp/foodir/not_valid\n"
+		self.assertEqual(actual_output.getvalue(), expected_value)
+		actual_output.close()
+
+	def test_glob_type(self):
+		"""
+		test that filetype matching works with fnmatching
+		"""
+		actual_output = find_packaged.process_args(['/tmp/', '-n', '*foo*', '-t', 'd'])
+		expected_value = "/tmp/foodir\n/tmp/foodir/nested_dir/nested_foodir\n"
+		self.assertEqual(actual_output.getvalue(), expected_value)
+		actual_output.close()
+
+	def test_process_args_regex(self):
+		"""
+		tests that a regexed name search works all the way through
+		"""
+		actual_output = find_packaged.process_args(['/tmp', '-r', 'notok'])
+		expected_value = "/tmp/notok\n"
+		self.assertEqual(actual_output.getvalue(), expected_value)
+		actual_output.close()
+
+	def test_regex_filetype(self):
+		"""
+		tests that regex works with filetype matching
+		"""
+		actual_output = find_packaged.process_args(['/tmp/', '-r', 'notok', '-t', 'd'])
+		expected_output = "/tmp/notok\n"
+		self.assertEqual(actual_output.getvalue(), expected_output)
+		actual_output.close()
+
+	def test_bad_arg(self):
+		"""
+		tests that a bad arg throws some sort of exception
+		it's an inelegant solution, but it works.
+		"""
+		try:
+			actual_output = find_packaged.process_args(['/tmp/', '-e', 'foodir', '-stirfry'])
+			assert False
+		except:
+			assert True
 
 	def tearDown(self):
 		#breaks down the test directory structure in /tmp
+		if os.path.exists("/tmp/foodir/gray"):
+			os.remove("/tmp/foodir/gray")
+		if os.path.exists("/tmp/foodir/grey"):
+			os.remove("/tmp/foodir/grey")
 		if os.path.exists("/tmp/foodir/foobar_file"):
                 	os.remove("/tmp/foodir/foobar_file")
                 if os.path.exists("/tmp/foodir/not_valid"):

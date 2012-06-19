@@ -1,5 +1,5 @@
-from os import walk
-from os.path import relpath, join, exists
+from os import walk, getcwd
+from os.path import relpath, join, exists, isdir
 from re import compile, match
 from fnmatch import filter, fnmatch
 import anydbm
@@ -26,27 +26,29 @@ def process_args(argslist):
 	group.add_argument("-e", "-exact", help="search for the exact file/dirname")
 
 	args = parser.parse_args(argslist)
-	
 	result = ""
 
-	try:
-		if args.n:
-			#run the recursive globbing code
+	if not isdir(args.path):
+		print "no search path provided, using cwd"
+		path = getcwd()
+
+	if hasattr(args, 'n'):
+		#run the recursive globbing code
+		if hasattr(args, 't'):
 			result = fnmatch_it(args.path, args.n, args.t)
-	except:
-		pass
-	try:
-		if  args.e:
-			#run the exact match code
+		else:
+			result = fnmatch_it(args.path, args.n, None)
+	elif hasattr(args, 'e'):
+		#run the exact match code
+		if hasattr(args, 't'):
 			result = exact_it(args.path, args.e, args.t)
-			print "Result is: "+result
-	except:
-		pass
-	try:
-		if args.r:
+		else:
+			result = exact_it(args.path, args.e, None)
+	else:
+		if hasattr(args, 't'):
 			result = regex_it(args.path, args.r, args.t)
-	except:
-		pass
+		else:
+			result = regex_it(args.path, args.r, None)
 
 	return result
 
@@ -107,7 +109,10 @@ def exact_it(path, exact, typ):
 
 def regex_it(path, exp, typ):
 	output = cStringIO.StringIO()
-        pattern = compile(exp)
+        try:
+		pattern = compile(exp)
+	except:
+		sys.exit("sorry, that regex was illegal")
         for (root, dirs, filenames) in walk(path):
                 for filename in filenames:
                         if match(pattern, filename):
@@ -123,6 +128,7 @@ def regex_it(path, exp, typ):
                                 else:
                                         if typ == 'd':
                                                 output.write(join(root, dirname)+'\n')
+	return output
 
 if __name__ == '__main__':
 	process_args()
