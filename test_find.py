@@ -101,6 +101,44 @@ class testFind(unittest.TestCase):
 		except:
 			assert True
 
+	def test_bad_path_given(self):
+		"""
+		tests that a bad path reverts to the current working directory
+		"""
+		actual_output = find_packaged.process_args(['/some/path/doesnt/exist/', '-e', 'stirfry'])
+		self.assertEqual(actual_output.getvalue(), "")
+		actual_output.close()
+
+	def test_no_args_given(self):
+		"""
+		tests that an error is raised when no args are provided
+		"""
+		try:
+			out = find_packaged.process_args([])
+			assert False
+		except:
+			assert True
+
+	def test_multiple_exclusive_options(self):
+		"""
+		tests that user can't provide multiple search types
+		"""
+		try:
+			out = find_packaged.process_args(['/tmp/', '-e', 'foo', '-n', 'f?o'])
+			assert False
+		except:
+			assert True
+
+	def test_only_path_given(self):
+		"""
+		tests that one search type must be provided
+		"""
+		try:
+			out = find_packaged.process_args(['/tmp'])
+			assert False
+		except:
+			assert True
+
 	def tearDown(self):
 		#breaks down the test directory structure in /tmp
 		if os.path.exists("/tmp/foodir/gray"):
